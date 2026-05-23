@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>乙級室內配線 實作教學</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070d18;color:#e2e8f0;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#070d18}::-webkit-scrollbar-thumb{background:#1e2d40;border-radius:3px}
+.card{background:#0e1827;border:1px solid #1e3050;border-radius:12px;padding:16px;margin-bottom:12px}
+.warn{background:#1a0800;border-left:3px solid #ef4444;padding:10px 14px;border-radius:0 8px 8px 0;color:#fca5a5;font-size:13px;line-height:1.8;margin:8px 0}
+.tip{background:#0a1f0a;border-left:3px solid #22c55e;padding:10px 14px;border-radius:0 8px 8px 0;color:#86efac;font-size:13px;line-height:1.8;margin:8px 0}
+.note{background:#0c1a2e;border-left:3px solid #3b82f6;padding:10px 14px;border-radius:0 8px 8px 0;color:#93c5fd;font-size:13px;line-height:1.8;margin:8px 0}
+.step{background:#0e1827;border-left:4px solid #a78bfa;border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+
+var LESSONS = [
+  // ── 第一站 ──────────────────────────────────────────
+  {id:"s1_intro", station:1, color:"#3b82f6", icon:"🏗️",
+   title:"第一站總覽：五種管路介紹",
+   subtitle:"PVC管、PVC線槽、EMT管、可撓金屬管、PVC電纜"},
+  {id:"s1_pvc", station:1, color:"#3b82f6", icon:"🔵",
+   title:"PVC管配管實作",
+   subtitle:"切管→彎管→固定→穿線"},
+  {id:"s1_emt", station:1, color:"#3b82f6", icon:"⚙️",
+   title:"EMT管彎管實作",
+   subtitle:"90度彎、偏移彎（Offset）、接地"},
+  {id:"s1_flex", station:1, color:"#3b82f6", icon:"🔩",
+   title:"可撓金屬管實作",
+   subtitle:"使用場合、長度限制、接地注意"},
+  {id:"s1_slot", station:1, color:"#3b82f6", icon:"📦",
+   title:"PVC線槽配線",
+   subtitle:"切割→固定→配線→蓋合"},
+  {id:"s1_panel", station:1, color:"#3b82f6", icon:"⚡",
+   title:"分電盤配線（三種電源系統）",
+   subtitle:"單相三線、三相三線、三相四線實作要點"},
+  {id:"s1_order", station:1, color:"#3b82f6", icon:"📋",
+   title:"第一站施工順序與時間管理",
+   subtitle:"160分鐘怎麼分配才能完成"},
+  // ── 第二站 ──────────────────────────────────────────
+  {id:"s2_intro", station:2, color:"#f59e0b", icon:"⚙️",
+   title:"第二站總覽：控制電路配線",
+   subtitle:"元件認識、接線手法、90分鐘策略"},
+  {id:"s2_mc", station:2, color:"#f59e0b", icon:"🔌",
+   title:"MC接觸器端子接線實作",
+   subtitle:"主接點RST/UVW、輔助接點、線圈A1/A2"},
+  {id:"s2_thry", station:2, color:"#f59e0b", icon:"🌡️",
+   title:"積熱電驛設定與接線",
+   subtitle:"電流設定、95-96/97-98接點、復位"},
+  {id:"s2_ydelta", station:2, color:"#f59e0b", icon:"🔄",
+   title:"Y-△啟動正逆轉實作（第一、二題）",
+   subtitle:"最難的題目，互鎖+計時+正逆轉"},
+  {id:"s2_pump", station:2, color:"#f59e0b", icon:"💧",
+   title:"抽水泵交替控制實作（第三、四題）",
+   subtitle:"液位開關、計時電驛、並列運轉"},
+  {id:"s2_ats", station:2, color:"#f59e0b", icon:"🔋",
+   title:"ATS自動切換實作（第七題）",
+   subtitle:"UVR、計時電驛、雙重互鎖"},
+  {id:"s2_meter", station:2, color:"#f59e0b", icon:"📊",
+   title:"儀表監視盤接線實作（第八題）",
+   subtitle:"CT/PT接線、二瓦特計法、注意CT不可開路"},
+  // ── 第三站 ──────────────────────────────────────────
+  {id:"s3_intro", station:3, color:"#ef4444", icon:"🏭",
+   title:"第三站總覽：高壓外線作業",
+   subtitle:"變壓器極性、接線步驟、礙子綁紮"},
+  {id:"s3_polarity", station:3, color:"#ef4444", icon:"🔍",
+   title:"變壓器極性判斷（最重要基礎）",
+   subtitle:"加極性vs減極性，接錯會短路"},
+  {id:"s3_vv", station:3, color:"#ef4444", icon:"⚡",
+   title:"V-V接線實作（第一、二題）",
+   subtitle:"兩台變壓器完成三相，57.7%容量"},
+  {id:"s3_dd", station:3, color:"#ef4444", icon:"🔺",
+   title:"△-△接線實作（第三題）",
+   subtitle:"三台首尾相連，封口前量測開口端電壓"},
+  {id:"s3_yv", station:3, color:"#ef4444", icon:"⭐",
+   title:"開Y-V接線實作（第四、五題）",
+   subtitle:"一次側Y形、二次側V形"},
+  {id:"s3_dy", station:3, color:"#ef4444", icon:"🔻",
+   title:"△-Y接線實作（第六題）",
+   subtitle:"一次△二次Y，二次落後30度"},
+  {id:"s3_insulator", station:3, color:"#ef4444", icon:"🧶",
+   title:"礙子綁紮實作（必考技能）",
+   subtitle:"頂溝綁紮、邊溝綁紮、低壓終端綁紮"},
+];
+
+// ── 課程內容 ──────────────────────────────────────────
+var CONTENT = {
+
+s1_intro: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">第一站：五種管路一次搞清楚</div>
+  ${svgConduitCompare()}
+  <div class="note">第一站160分鐘，要完成配管、穿線、分電盤、接地工程並通過功能測試。每種管路的用途和施工規定都不同！</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">五種管路比較表</div>
+  ${tableHTML([
+    ["管路種類","材質","用途","最大固定間距","接地需求"],
+    ["PVC管（厚管）","塑膠（白/灰）","明管或暗管","150cm","不需要"],
+    ["CD管（橘色）","塑膠（波浪紋）","預埋混凝土","不適用（固定在RC內）","不需要"],
+    ["PVC線槽","塑膠","明管，易維修","80cm（水平）","不需要"],
+    ["EMT管","薄壁金屬","機械保護強","200cm","需要 ✓"],
+    ["可撓金屬管","金屬軟管","設備連接處","最長1.8公尺","需要 ✓"],
+  ])}
+  <div class="warn">⚠️ 可撓金屬管（軟管）：長度不可超過1.8公尺，不得用於升降機、蓄電池室、危險場所。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">第一站評審最常扣分的項目</div>
+  ${[
+    ["接地線未接或用錯顏色","重大缺失，直接不及格"],
+    ["可撓金屬管接地線未引接","常被遺忘，嚴重扣分"],
+    ["管路固定間距超過規定","超過200cm（EMT）/150cm（PVC）"],
+    ["穿線後管口無護管口","毛邊割傷導線絕緣"],
+    ["功能測試不通過","配線錯誤，最嚴重"],
+    ["電壓量測值不正確","接線錯誤"],
+  ].map(function(r){return `
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #1e3050">
+      <span style="color:#ef4444;font-size:14px;flex-shrink:0">❌</span>
+      <div><div style="color:#e2e8f0;font-size:13px;font-weight:600">${r[0]}</div>
+      <div style="color:#64748b;font-size:12px">${r[1]}</div></div>
+    </div>`;}).join('')}
+</div>
+`},
+
+s1_pvc: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">PVC管配管完整步驟</div>
+  ${svgSteps([
+    {n:1,c:"#ef4444",icon:"📏",t:"量測與切管",d:"用捲尺量好長度，用鋼鋸切斷，切口用銼刀磨平毛邊"},
+    {n:2,c:"#3b82f6",icon:"🌀",t:"彎管（需要轉彎時）",d:"用彎管彈簧插入管內，緩慢均勻施力彎曲。彎曲半徑≥管外徑×6倍"},
+    {n:3,c:"#8b5cf6",icon:"🔗",t:"連接接線盒",d:"管端塗PVC接著劑（膠水），插入接線盒敲緊，並用管接頭（Connector）固定"},
+    {n:4,c:"#f59e0b",icon:"📌",t:"固定管路",d:"每150cm固定一個管夾，距接頭/彎頭/接線盒30cm內必須固定"},
+    {n:5,c:"#22c55e",icon:"🧵",t:"穿線",d:"拉線器先穿，導線頭用膠帶綁在鉤上，多線時間隔1cm固定，慢慢拉"},
+  ])}
+  <div class="tip">PVC管彎管後，彎曲處管徑縮小，穿線較困難。建議在需要多根轉彎處改用PVC接線盒分段，比較好穿線。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">PVC管規格選用（乙級考試）</div>
+  ${tableHTML([
+    ["管內徑（吋）","俗稱","適用導線截面積","最多幾條"],
+    ["1/2 吋（4分）","細管","2.0mm² × 3條","3條2.0mm²"],
+    ["3/4 吋（6分）","中管","3.5mm² × 3條","3條3.5mm²"],
+    ["1 吋（1吋）","大管","5.5mm² 以上","依填充率40%計算"],
+  ])}
+  <div class="note">管內導線填充率不得超過40%，確保散熱和穿線容易。計算：所有導線截面積合計 ÷ 管內截面積 ≤ 40%。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">實作口訣</div>
+  ${["切管→磨平→量間距→固定管夾→接接線盒→穿線器→拉線→接線",
+     "固定間距記住：PVC管150cm，距接頭30cm",
+     "彎曲半徑：最小6倍管外徑，太彎穿不進去",
+     "管內填充率40%以下，多了穿不動也散熱差"].map(function(t,i){
+    return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:4px 0">✓ ${t}</div>`;}).join('')}
+</div>
+`},
+
+s1_emt: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">EMT管彎管：三種彎法</div>
+  ${svgEMTBend()}
+  <div class="note">EMT管彎管是乙級第一站的重點技能，考試中一定會出現，需要大量練習才能在時限內做得漂亮。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">三種彎管步驟詳解</div>
+  <div style="margin-bottom:16px">
+    <div style="color:#a78bfa;font-weight:700;font-size:13px;margin-bottom:8px">① 90度彎管</div>
+    ${["找出要彎的位置，在管上做記號","將彎管器踏板放在記號處（彎管器箭頭對準記號）","腳踩踏板固定，雙手均勻向下壓桿","壓到90度（彎管器有刻度指示）停止","檢查：管與地面垂直，彎曲處內側無明顯凹陷"].map(function(s,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${s}</div>`;}).join('')}
+  </div>
+  <div style="margin-bottom:16px">
+    <div style="color:#22c55e;font-weight:700;font-size:13px;margin-bottom:8px">② 偏移彎（Offset）— 用來跨越障礙物</div>
+    ${["決定偏移高度（跨越的障礙物高度）","計算兩個彎點的距離（依角度和偏移量計算）","在第一個彎點標記，彎第一個角度（如22.5°或30°）","量好距離在第二個彎點標記","反方向彎相同角度，確保兩段平行"].map(function(s,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${s}</div>`;}).join('')}
+    <div class="tip">偏移彎公式：兩彎點距離 = 偏移高度 ÷ sin(彎曲角度)。30度時距離 = 偏移高度 × 2。</div>
+  </div>
+  <div>
+    <div style="color:#f59e0b;font-weight:700;font-size:13px;margin-bottom:8px">③ 鞍型彎（Saddle）— 用來跨越已有的管路</div>
+    ${["中間先彎22.5度（向上），兩側各彎45度（向下）","三個彎構成鞍形，管路從上方跨越"].map(function(s,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${s}</div>`;}).join('')}
+  </div>
+</div>
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:10px">EMT管接地（最重要！）</div>
+  ${svgEMTGround()}
+  <div class="warn">⚠️ EMT管接地是乙級術科評審必查項目！每個接線盒之間用1.6mm²綠色導線連接，配電盤也要連接接地。漏接→重大缺失→不及格。</div>
+  <div class="tip">接地線接法：EMT管→接線盒→接地螺絲→1.6mm²綠線→下一個接線盒。所有接線盒和管路形成連續的接地網路，最後接到配電盤接地匯流排。</div>
+</div>
+`},
+
+s1_flex: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">可撓金屬管（軟管）使用場合</div>
+  ${svgFlexConduit()}
+  <div class="note">可撓金屬管主要用於電動機進線（防止震動傳遞到固定管路），以及需要柔性連接的場合。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">可撓金屬管施工規定</div>
+  ${[
+    ["最大長度","1.8公尺（1.8m）以下","超過這個長度必須使用硬管"],
+    ["固定方式","兩端固定，中間依需要固定","防止下垂"],
+    ["接地","需要引接接地線","從端子台引接到外殼"],
+    ["禁止使用場所","升降機、蓄電池室、危險場所、灌水泥或直埋","嚴格限制"],
+    ["接頭","使用專用壓接接頭","確保電氣連通性和接地"],
+  ].map(function(r){return `
+    <div style="padding:9px 0;border-bottom:1px solid #1e3050">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="color:#f59e0b;font-weight:700;font-size:12px;min-width:80px">${r[0]}</div>
+        <div style="flex:1">
+          <div style="color:#e2e8f0;font-size:13px">${r[1]}</div>
+          <div style="color:#64748b;font-size:11px">${r[2]}</div>
+        </div>
+      </div>
+    </div>`;}).join('')}
+  <div class="warn">⚠️ 可撓金屬管即使外殼是塑膠型，也必須從端子台引接一條接地線進入外殼內。這是乙級術科常見扣分點！</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">可撓金屬管施工步驟</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"✂️",t:"裁切適當長度",d:"用金屬剪或砂輪機切斷，留足夠彎曲餘量（不超過1.8m）"},
+    {n:2,c:"#8b5cf6",icon:"🔗",t:"安裝接頭",d:"兩端安裝專用壓接接頭，確認接頭和接線盒/設備連接牢固"},
+    {n:3,c:"#22c55e",icon:"🟢",t:"引接接地線",d:"從端子台引接1.6mm²綠色接地線，穿入可撓管，連接到設備金屬外殼的接地螺絲"},
+    {n:4,c:"#f59e0b",icon:"🧵",t:"穿線",d:"接地線先穿，再穿各相導線，固定兩端"},
+  ])}
+</div>
+`},
+
+s1_slot: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">PVC線槽（Cable Duct）施工步驟</div>
+  ${svgCableDuct()}
+  <div class="note">PVC線槽最大優點：日後增設修改導線時，打開蓋板即可，不需重新穿管。廣泛用於辦公室、工廠控制盤附近。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">PVC線槽施工規定與步驟</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"✂️",t:"切割線槽",d:"用鋼鋸切斷，切口用銼刀磨平。轉彎處使用專用L型/T型/X型角件，不可強行折彎"},
+    {n:2,c:"#8b5cf6",icon:"📌",t:"固定底座",d:"水平安裝：每80cm固定一個；垂直安裝：每120cm固定。距終端/轉角30cm內固定"},
+    {n:3,c:"#f59e0b",icon:"🧵",t:"放入導線",d:"導線整齊排列放入，填充率不超過40%，導線須平整不交叉"},
+    {n:4,c:"#22c55e",icon:"✅",t:"蓋上蓋板",d:"確認蓋板扣合確實，導線不被壓到，蓋板可輕易打開維修"},
+  ])}
+  <div class="tip">線槽填充率40%以下：留空間方便日後增設，也確保散熱。線槽轉彎一定用專用角件，直接折彎會使蓋板無法蓋合。</div>
+</div>
+`},
+
+s1_panel: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">三種電源系統分電盤比較</div>
+  ${svgPanelCompare()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">分電盤配線要點</div>
+  <div style="margin-bottom:14px">
+    <div style="color:#60a5fa;font-weight:700;font-size:13px;margin-bottom:8px">單相三線式 110/220V（最常考）</div>
+    ${["主開關：2P NFB（同時切斷L1和L2）",
+      "110V分路：1P NFB，L1和L2交替排列",
+      "220V冷氣分路：2P NFB，接L1+L2",
+      "N線（白線）：接中性線端子排，不得斷路",
+      "PE線（綠線）：接接地端子排，連通所有設備外殼",
+      "接地電極：第三種接地，≤10Ω"].map(function(t){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">• ${t}</div>`;}).join('')}
+  </div>
+  <div style="margin-bottom:14px">
+    <div style="color:#f97316;font-weight:700;font-size:13px;margin-bottom:8px">三相三線式 220V</div>
+    ${["主開關：3P NFB（同時切斷RST）",
+      "無中性線N，只有RST三相和PE",
+      "線電壓：RST任兩相間均為220V",
+      "接地：PE線連通設備和配電盤外殼"].map(function(t){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">• ${t}</div>`;}).join('')}
+  </div>
+  <div>
+    <div style="color:#a78bfa;font-weight:700;font-size:13px;margin-bottom:8px">三相四線式 220/380V</div>
+    ${["主開關：3P或4P NFB",
+      "相電壓（相對N）：220V  線電壓（相間）：380V",
+      "單相220V負載：一條相線＋N線",
+      "三相380V負載：RST三條相線",
+      "N線不得斷路（三相不平衡時電壓會嚴重偏斜）",
+      "PE線與N線完全分離（TN-S系統）"].map(function(t){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">• ${t}</div>`;}).join('')}
+  </div>
+</div>
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:10px">功能測試：考官會量這些電壓</div>
+  ${tableHTML([
+    ["測試點","單相三線式","三相三線式","三相四線式"],
+    ["任意兩相線間","220V","220V","380V"],
+    ["相線對N線","110V","無N線","220V"],
+    ["相線對PE","≈110V（對地）","≈127V（對地）","≈220V（對地）"],
+    ["N線對PE","應接近0V","無N線","應接近0V"],
+  ])}
+  <div class="warn">⚠️ 接地線未接或接錯：PE對地電阻量測不符規定，功能測試不通過→不及格。每條接地線都要確實連接並輕拉確認。</div>
+</div>
+`},
+
+s1_order: function(){return `
+<div class="card">
+  <div style="color:#3b82f6;font-weight:700;font-size:14px;margin-bottom:12px">160分鐘施工時間分配建議</div>
+  ${svgTimeBar([
+    {label:"閱讀試題、清點材料",min:10,c:"#64748b"},
+    {label:"配管固定（EMT+PVC+線槽）",min:45,c:"#3b82f6"},
+    {label:"可撓金屬管安裝",min:10,c:"#8b5cf6"},
+    {label:"分電盤配線",min:25,c:"#f59e0b"},
+    {label:"穿線",min:25,c:"#22c55e"},
+    {label:"接線（各盒、燈具、插座）",min:25,c:"#f97316"},
+    {label:"接地工程",min:10,c:"#ef4444"},
+    {label:"功能測試和最後檢查",min:10,c:"#a78bfa"},
+  ])}
+  <div class="tip">考試前10分鐘：清點材料，找出材料缺少或損壞立即舉手要求更換。這段時間不可施工！</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">施工順序口訣</div>
+  ${svgSteps([
+    {n:1,c:"#64748b",icon:"📖",t:"閱讀試題（10分鐘）",d:"看清楚工作圖、配置圖、器具位置圖，在腦海中規劃路線"},
+    {n:2,c:"#3b82f6",icon:"📐",t:"畫基準線、定位（5分鐘）",d:"在配線板上標出管路路徑和接線盒位置"},
+    {n:3,c:"#8b5cf6",icon:"🔩",t:"配管固定（先不穿線）",d:"EMT管彎好固定→PVC管→線槽→可撓管，全部管路先到位"},
+    {n:4,c:"#f59e0b",icon:"⚡",t:"分電盤配線",d:"NFB安裝、匯流排接線、N線端子、接地端子"},
+    {n:5,c:"#22c55e",icon:"🧵",t:"穿線",d:"從分電盤往外穿，主幹線先穿，分路線後穿"},
+    {n:6,c:"#f97316",icon:"🔧",t:"各點接線",d:"接線盒接線、燈具、插座、開關、電動機"},
+    {n:7,c:"#ef4444",icon:"🟢",t:"接地工程",d:"確認所有綠線（PE）都連接妥當，EMT管接地導線，可撓管接地"},
+    {n:8,c:"#a78bfa",icon:"✅",t:"功能測試",d:"送電前先檢查、送電後量測電壓、操作設備確認功能"},
+  ])}
+  <div class="warn">⚠️ 最常見失誤：穿線後忘記接地線，或配管時間太長導致最後來不及接線。建議配管30分鐘就要停，開始接線。</div>
+</div>
+`},
+
+// ── 第二站 ────────────────────────────────────────────
+
+s2_intro: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">第二站：90分鐘電機控制配線策略</div>
+  ${svgTimeBar([
+    {label:"閱讀電路圖（理解動作）",min:10,c:"#64748b"},
+    {label:"元件定位、標示線號",min:10,c:"#3b82f6"},
+    {label:"主電路配線（粗線）",min:15,c:"#ef4444"},
+    {label:"控制電路配線（細線）",min:35,c:"#f59e0b"},
+    {label:"接地線",min:5,c:"#22c55e"},
+    {label:"功能測試",min:15,c:"#a78bfa"},
+  ])}
+  <div class="warn">⚠️ 90分鐘非常緊！電路要熟到看一眼就知道怎麼接。8題都要背熟，任何一題抽到都能立刻動手。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">配線手法：整齊美觀是基本要求</div>
+  ${["導線走向整齊，水平垂直，不斜拉","同一方向的線整束（用束帶固定）","線號端子紙清楚標示每條線的線號","主電路用較粗導線，控制電路用較細導線","控制電路：一般用2.0mm²（黑）或更細（白色）","接地線：一律綠色，不可省略"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">第二站8題快速分類</div>
+  ${tableHTML([
+    ["題號","主題","重點元件","難度"],
+    ["第1題","Y-△＋正逆轉","KMF/KMR/KMY/KMD/KT","⭐⭐⭐⭐⭐"],
+    ["第2題","Y-△＋正逆轉＋停電保護","同上＋UVR","⭐⭐⭐⭐⭐"],
+    ["第3題","兩台泵手動/自動交替","MC×2/LS/TDR","⭐⭐⭐"],
+    ["第4題","污排水泵＋異常水位並列","MC×2/LS多組","⭐⭐⭐⭐"],
+    ["第5題","沖床計數＋直流煞車","Counter/DC/TDR","⭐⭐⭐⭐"],
+    ["第6題","大門控制","MCU/MCD/LS/光電","⭐⭐⭐"],
+    ["第7題","ATS自動切換","MCA/MCB/UVR/TDR","⭐⭐⭐⭐"],
+    ["第8題","儀表監視盤CT/PT","CT/PT/瓦特計","⭐⭐⭐"],
+  ])}
+</div>
+`},
+
+s2_mc: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">電磁接觸器（MC）端子完整說明</div>
+  ${svgMCTerminal()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">MC接線要點</div>
+  ${[
+    ["主接點","1/L1, 3/L2, 5/L3（輸入）→ 2/T1, 4/T2, 6/T3（輸出）","接三相電源RST→電動機UVW"],
+    ["輔助NO","13-14（常開）","自保迴路、互鎖電路"],
+    ["輔助NC","21-22（常閉）","互鎖用：MCF線圈串MCR的NC（21-22）"],
+    ["線圈","A1-A2","控制電路電壓（通常220V或110V AC）"],
+  ].map(function(r){return `
+    <div style="padding:9px 0;border-bottom:1px solid #1e3050">
+      <div style="color:#f59e0b;font-weight:700;font-size:12px;margin-bottom:3px">${r[0]} — ${r[1]}</div>
+      <div style="color:#94a3b8;font-size:12px">${r[2]}</div>
+    </div>`;}).join('')}
+  <div class="tip">MC接線順序建議：先接主電路（RST→UVW），再接控制電路（A1/A2），最後接輔助接點（自保和互鎖）。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">接線後如何測試MC功能</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"🔌",t:"不通電，手動按壓MC",d:"用手或螺絲刀按下MC動作桿：NO接點應閉合（導通），NC接點應斷開"},
+    {n:2,c:"#f59e0b",icon:"⚡",t:"通電測試線圈",d:"給A1-A2通電（控制電壓），MC應自動吸合，發出「答」聲"},
+    {n:3,c:"#22c55e",icon:"✅",t:"確認主接點通電",d:"主接點通電後量測T1-T2-T3應有電壓輸出"},
+  ])}
+</div>
+`},
+
+s2_thry: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">積熱電驛（TH-RY）完整說明</div>
+  ${svgTHRY()}
+  <div class="note">積熱電驛（Thermal Relay）保護電動機防止過載。電流超過設定值持續一段時間，雙金屬片受熱彎曲，跳脫保護電動機。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">TH-RY設定與接線</div>
+  ${["電流設定旋鈕：調整到電動機額定電流（銘牌FLA值）×1.0~1.15","串聯在主電路中（1-2, 3-4, 5-6）：RST三相電流都要通過","95-96端子：NC接點，串聯在MC線圈控制電路","97-98端子：NO接點，用於故障警報電路","復位按鈕（Reset）：跳脫後按此才能恢復，在MC前面按"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+  <div class="warn">⚠️ TH-RY接線方向：1-2, 3-4, 5-6是串聯在主電路中的，不可接在控制電路中（電流太小，無法感應）。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">TH-RY跳脫後的處理流程</div>
+  ${svgSteps([
+    {n:1,c:"#ef4444",icon:"🚨",t:"TH-RY跳脫，電動機停止",d:"警報燈亮（若有警報電路），蜂鳴器響"},
+    {n:2,c:"#f59e0b",icon:"🔍",t:"找出過載原因",d:"①機械是否卡住 ②電動機電流是否過大 ③TH-RY設定值是否太小"},
+    {n:3,c:"#3b82f6",icon:"⏳",t:"等TH-RY冷卻",d:"等雙金屬片恢復原位（約1~5分鐘）"},
+    {n:4,c:"#8b5cf6",icon:"🔄",t:"按復位按鈕（Reset）",d:"按TH-RY本體上的復位鍵，確認95-96恢復閉合"},
+    {n:5,c:"#22c55e",icon:"▶️",t:"重新啟動測試",d:"確認故障排除後，重新按啟動鍵測試"},
+  ])}
+</div>
+`},
+
+s2_ydelta: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">Y-△啟動正逆轉（最難題目）電路架構</div>
+  ${svgYDeltaFwdRev()}
+  <div class="warn">⚠️ 這題有四個MC（KMF/KMR/KMY/KMD）和兩組互鎖，是乙級第二站最複雜的題目。必須完全背熟電路圖！</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">四個MC的功能分工</div>
+  ${tableHTML([
+    ["接觸器","功能","動作時機"],
+    ["KMF（正轉MC）","控制主電路正轉方向","按正轉啟動鍵"],
+    ["KMR（逆轉MC）","控制主電路逆轉方向","按逆轉啟動鍵"],
+    ["KMY（Y接MC）","將電動機接成Y形","啟動初期（KT計時中）"],
+    ["KMD（△接MC）","將電動機接成△形","KT時間到後切換"],
+  ])}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">三組互鎖（缺一不可！）</div>
+  ${[
+    {t:"互鎖①：KMF vs KMR（正逆轉互鎖）",d:"KMF線圈串KMR的NC接點，KMR線圈串KMF的NC接點。防止正逆轉同時通電→三相短路！"},
+    {t:"互鎖②：KMY vs KMD（Y△互鎖）",d:"KMY線圈串KMD的NC，KMD線圈串KMY的NC。防止Y和△同時接入→電動機繞組短路！"},
+    {t:"互鎖③：計時電驛KT控制切換",d:"KT由KMF或KMR通電時同步起動計時，時間到後：切斷KMY→接通KMD（Y→△切換）"},
+  ].map(function(r){return `
+    <div style="background:#0a1020;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="color:#f59e0b;font-weight:700;font-size:13px;margin-bottom:6px">${r.t}</div>
+      <div style="color:#94a3b8;font-size:13px;line-height:1.7">${r.d}</div>
+    </div>`;}).join('')}
+</div>
+<div class="card">
+  <div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:10px">配線步驟建議（90分鐘內完成）</div>
+  ${svgSteps([
+    {n:1,c:"#ef4444",icon:"📖",t:"先把電路圖寫在紙上（5分鐘）",d:"對照試題，在作答紙上寫出主電路和控制電路的線號"},
+    {n:2,c:"#3b82f6",icon:"🔌",t:"主電路先接（15分鐘）",d:"NFB→TH-RY→KMF/KMR（正逆轉切換）→KMY/KMD（Y△切換）→電動機"},
+    {n:3,c:"#f59e0b",icon:"⚡",t:"控制電路（35分鐘）",d:"L→停止NC→KMF自保→互鎖→KT→KMY→TH-RY 95-96→KMF線圈→N（正轉路徑）"},
+    {n:4,c:"#22c55e",icon:"🟢",t:"接地線",d:"所有MC、TH-RY、配電盤外殼接地線"},
+    {n:5,c:"#a78bfa",icon:"✅",t:"功能測試（15分鐘）",d:"通電測試：正轉Y啟動→△切換；逆轉Y啟動→△切換；停止功能"},
+  ])}
+</div>
+`},
+
+s2_pump: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">抽水泵交替控制電路邏輯</div>
+  ${svgPumpControl()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">第三題：兩台泵手動/自動交替</div>
+  ${["手動模式：選擇開關切手動，各自獨立啟停","自動模式：液位開關低水位啟動，高水位停止","計時電驛TDR自動切換：A泵→計時→B泵→計時→A泵（循環）","任一TH-RY跳脫：該台停，另一台自動接手","指示燈：綠=待機，紅=運轉，黃=故障"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">第四題：污排水泵＋異常水位並列運轉</div>
+  ${["在第三題基礎上增加高水位並列運轉","正常水位：單台交替（同第三題）","異常高水位（LS-H動作）：兩台同時並列運轉加速排水","同時啟動警報：警報燈亮＋蜂鳴器響","水位恢復正常後：自動恢復單台交替，警報解除"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+  <div class="tip">液位開關（LS）接點：浮球型一般是水位低時NC閉合（讓電路啟動），水位高時NC斷開（停止）。確認試題說明的接點型式。</div>
+</div>
+`},
+
+s2_ats: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">ATS自動切換電路（第七題）</div>
+  ${svgATS()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">ATS接線重點</div>
+  ${[
+    {t:"MCA和MCB雙重互鎖（最重要！）",d:"電氣互鎖：各串對方NC接點。若考場器具板有機械互鎖裝置，電氣互鎖也不可省略（雙重保護）。"},
+    {t:"欠電壓電驛（UVR）接線",d:"UVR線圈接主電源，正常電壓時NC接點（A1-A2）閉合允許控制電路運作；停電→NC斷開→MCA斷電→TDR1開始計時。"},
+    {t:"兩個計時電驛TDR1和TDR2",d:"TDR1：停電後延時（等發電機穩定）才切備用電源。TDR2：主電源恢復後延時（確認穩定）才切回主電源。"},
+    {t:"指示燈系統",d:"主電源供電：綠燈亮。備用電源供電：黃燈亮。停電中：紅燈亮（或蜂鳴器）。"},
+  ].map(function(r){return `
+    <div style="background:#0a1020;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="color:#f59e0b;font-weight:700;font-size:13px;margin-bottom:6px">${r.t}</div>
+      <div style="color:#94a3b8;font-size:13px;line-height:1.7">${r.d}</div>
+    </div>`;}).join('')}
+  <div class="warn">⚠️ MCA和MCB同時通電 = 兩電源並聯 = 可能因相位差造成短路或巨大環流，設備損毀！雙重互鎖是這題的核心。</div>
+</div>
+`},
+
+s2_meter: function(){return `
+<div class="card">
+  <div style="color:#f59e0b;font-weight:700;font-size:14px;margin-bottom:12px">儀表監視盤（第八題）CT/PT接線</div>
+  ${svgMeterPanel()}
+  <div class="warn">⚠️⚠️ CT（比流器）二次側在通電狀態下絕對不可開路！開路後感應高電壓，人員觸電死亡。接線前先確認CT二次側短路，接好後才可解除。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">CT和PT接線步驟</div>
+  ${svgSteps([
+    {n:1,c:"#ef4444",icon:"🔒",t:"先短路CT二次側",d:"用短路線將CT的S1-S2短路，保護安全，接線完成前不可解除"},
+    {n:2,c:"#3b82f6",icon:"🔗",t:"接CT一次側（P1-P2）",d:"P1-P2串聯在主電路中，注意P1為電源側（標有箭頭方向）"},
+    {n:3,c:"#8b5cf6",icon:"📊",t:"接CT二次側（S1-S2）",d:"S1-S2接瓦特計電流線圈，電流計。注意S1和S2的極性方向（影響功率方向）"},
+    {n:4,c:"#f59e0b",icon:"🔌",t:"接PT二次側（110V）",d:"PT二次側接瓦特計電壓線圈，電壓計，功率因數計"},
+    {n:5,c:"#22c55e",icon:"🔓",t:"解除CT二次側短路",d:"確認所有接線完成後，才可移除CT二次側短路線"},
+    {n:6,c:"#a78bfa",icon:"✅",t:"功能測試",d:"通電後：電壓計讀值正確、電流計有讀值、瓦特計方向正確"},
+  ])}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">二瓦特計法讀值換算</div>
+  ${tableHTML([
+    ["功率因數","W1讀值","W2讀值","三相總功率P"],
+    ["cos φ = 1（純電阻）","W1 = W2（相等）","W1 = W2","P = W1 + W2"],
+    ["cos φ = 0.5（滯後）","W1 為正","W2 接近 0 或負","P = W1 + W2（W2可能需反接）"],
+    ["cos φ < 0.5（很低）","W1 為正","W2 為負","P = W1 - |W2|"],
+  ])}
+  <div class="tip">若W2指針往負方向偏，需要將W2的電流端子（I+ I-）調換，讀負值，計算時P = W1 - W2（讀值）。</div>
+</div>
+`},
+
+// ── 第三站 ────────────────────────────────────────────
+
+s3_intro: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">第三站：高壓外線作業（90分鐘，6題抽1）</div>
+  <div class="warn">⚠️ 第三站通過率最低！這站需要大量練習，特別是礙子綁紮技術，沒有捷徑，只能反覆練習。</div>
+  ${tableHTML([
+    ["題號","接線型式","特點"],
+    ["第1、2題","V-V接線","兩台變壓器，57.7%容量，最常考"],
+    ["第3題","△-△接線","三台，封口前量電壓是關鍵"],
+    ["第4、5題","開Y-V接線","一次側Y形，二次側V接"],
+    ["第6題","△-Y接線","二次落後30度，含礙子綁紮"],
+  ])}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">90分鐘時間分配建議</div>
+  ${svgTimeBar([
+    {label:"閱讀試題，確認接線型式",min:5,c:"#64748b"},
+    {label:"高壓礙子綁紮（頂溝或邊溝）",min:30,c:"#ef4444"},
+    {label:"變壓器接線",min:30,c:"#f59e0b"},
+    {label:"低壓軸型礙子終端綁紮",min:15,c:"#8b5cf6"},
+    {label:"接地線、最後檢查",min:10,c:"#22c55e"},
+  ])}
+  <div class="warn">⚠️ 礙子綁紮佔大量時間，必須練到快且標準。若第六題（△-Y）還加礙子綁紮，時間更緊。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">自備工具清單（第三站）</div>
+  ${["鋼絲鉗（拉緊紮線用）","一字起子、十字起子","剝線刀（電工刀）","捲尺（量尺寸）","驗電筆","護目鏡（高壓作業）","個人防護手套"].map(function(t){return `<div style="color:#cbd5e1;font-size:13px;line-height:1.8;padding:2px 0">• ${t}</div>`;}).join('')}
+</div>
+`},
+
+s3_polarity: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">變壓器極性：接線前最重要的觀念</div>
+  ${svgTransformerPolarity()}
+  <div class="warn">⚠️ 極性接錯是第三站最嚴重的失誤！V-V和△-△等接線都依賴正確極性，極性錯誤→電壓相位錯誤→封口時短路或電壓計讀數異常。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">減極性（Subtractive Polarity）的判斷</div>
+  ${["台灣考試用的單相變壓器通常標示 H1-H2（一次側）和 X1-X2（二次側）","減極性（標準型）：H1在左，X1在左 → 電壓方向相同","同側標示相同（H1和X1在同側）的為減極性","V-V接線時：T1的H2接T2的H1（一次側形成V形）"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">接線前如何確認極性（重要！）</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"📖",t:"看銘牌標示",d:"確認H1/H2/X1/X2的位置標示，台灣標準通常為減極性"},
+    {n:2,c:"#f59e0b",icon:"🔌",t:"極性測試法（如不確定）",d:"一次側和二次側串聯，量兩端電壓：電壓=差值→減極性（正確）；電壓=和→加極性"},
+    {n:3,c:"#22c55e",icon:"✅",t:"依極性正確接線",d:"依照試題接線圖和極性標示，確認每台變壓器方向正確"},
+  ])}
+</div>
+`},
+
+s3_vv: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">V-V接線圖（互動）</div>
+  ${svgVV()}
+  <div class="note">V-V接線：只需兩台單相變壓器提供三相電力。容量利用率57.7%。台灣最常考的第三站題目。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">V-V接線步驟詳解</div>
+  ${svgSteps([
+    {n:1,c:"#ef4444",icon:"📖",t:"確認兩台變壓器規格和極性",d:"兩台必須規格相同（電壓比、容量），極性標示H1H2/X1X2"},
+    {n:2,c:"#3b82f6",icon:"🔌",t:"一次側接線（高壓側）",d:"T1的H1接R相，H2接S相；T2的H1接S相，H2接T相（V形，共用S相線）"},
+    {n:3,c:"#8b5cf6",icon:"🔌",t:"二次側接線（低壓側）",d:"T1的X1接a，X2接b；T2的X1接b，X2接c（X2和X1共用b節點）"},
+    {n:4,c:"#f59e0b",icon:"🟢",t:"接地",d:"變壓器外殼接地，二次側中性點（若需要）接地"},
+    {n:5,c:"#22c55e",icon:"🔍",t:"送電前檢查",d:"確認所有端子鎖緊，線不碰觸外殼，相序計確認相序正確"},
+  ])}
+  <div class="warn">⚠️ V-V接線一次側S相是兩台共用（H2和H1各接一次），這是最容易搞錯的地方。接前在紙上畫出來確認。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">V-V完成後測試</div>
+  ${["用相序計確認二次側三相輸出相序正確","量測二次側三相線電壓：三個值應接近相等","量測負載電流三相平衡","無負載電壓與額定值偏差不超過5%"].map(function(t){return `<div style="color:#86efac;font-size:13px;line-height:1.8;padding:2px 0">✓ ${t}</div>`;}).join('')}
+</div>
+`},
+
+s3_dd: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">△-△接線步驟與封口前驗電</div>
+  ${svgDeltaDelta()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">△-△接線步驟（最重要：封口前量電壓！）</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"🔌",t:"一次側三台首尾相連（△形）",d:"T1:H1→R, H2→S；T2:H1→S, H2→T；T3:H1→T, H2→R（形成△形）"},
+    {n:2,c:"#8b5cf6",icon:"🔌",t:"二次側三台首尾相連（先不封口）",d:"T1:X1→a, X2→b；T2:X1→b, X2→c；T3:X1→c（X2先不接，留開口）"},
+    {n:3,c:"#ef4444",icon:"🔍",t:"送電，量開口端電壓（最關鍵！）",d:"在T3的X2和T1的X1之間量電壓：理論值應接近0V（正確）。若有電壓→極性或相位有誤→斷電修正！"},
+    {n:4,c:"#22c55e",icon:"✅",t:"確認0V後封口",d:"開口端電壓≈0V，才可連接封口。封口後△形接線完成。"},
+    {n:5,c:"#f59e0b",icon:"🔌",t:"接負載、量測",d:"量三相線電壓、相序確認"},
+  ])}
+  <div class="warn">⚠️ △接封口前不量電壓直接封口是最嚴重的錯誤！若接線有誤，封口瞬間會造成巨大短路電流，損壞設備並危及人身安全。</div>
+</div>
+`},
+
+s3_yv: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">開Y-V接線說明</div>
+  ${svgOpenYV()}
+  <div class="note">開Y-V接線：一次側三台接成Y形（星形，中性點不接地），二次側只使用兩台接成V形（開△）。這種接線較少見，但考試會考。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">開Y-V接線步驟</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"🔌",t:"一次側（開Y）",d:"T1的H1→R，T2的H1→S，T3的H1→T（各接一相）；T1、T2、T3的H2相連接成中性點（不接地）"},
+    {n:2,c:"#8b5cf6",icon:"🔌",t:"二次側（V形，只用兩台）",d:"T1的X1→a，X2→b；T2的X1→b，X2→c（b節點共用）；T3二次側不使用"},
+    {n:3,c:"#22c55e",icon:"🔍",t:"確認相序和電壓",d:"送電後量測二次側三相輸出電壓和相序"},
+  ])}
+  <div class="tip">開Y中性點「開放」（不接地），與Y接有中性點接地不同。這個開放中性點允許三次諧波電流環流，減少電壓波形失真。</div>
+</div>
+`},
+
+s3_dy: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">△-Y接線（Dyn11）說明</div>
+  ${svgDeltaY()}
+  <div class="note">△-Y接線最複雜，還要完成礙子綁紮。二次側Y接中性點接地，二次側電壓落後一次側30度（Dyn11）。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:10px">△-Y接線步驟</div>
+  ${svgSteps([
+    {n:1,c:"#3b82f6",icon:"🔌",t:"一次側△接（同△-△一次側）",d:"三台首尾相連形成△形，確認極性，封口前量開口端電壓≈0V"},
+    {n:2,c:"#8b5cf6",icon:"🔌",t:"二次側Y接",d:"T1的X1→a（R相）；T2的X1→b（S相）；T3的X1→c（T相）；三台的X2相連接成中性點N"},
+    {n:3,c:"#ef4444",icon:"🟢",t:"中性點接地",d:"Y接中性點N'接第二種接地（≤25Ω），提供系統中性線"},
+    {n:4,c:"#22c55e",icon:"🔍",t:"驗電和相序確認",d:"二次側線電壓量測，相序計確認，注意相位落後一次側30度（Dyn11）"},
+  ])}
+  <div class="tip">Dyn11接線群組：D=△一次，y=Y二次，n=有接地中性點，11=角位移30度（鐘面11點）。變壓器並聯運轉時接線群組必須相同。</div>
+</div>
+`},
+
+s3_insulator: function(){return `
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:12px">礙子綁紮：第三站必考技能</div>
+  <div class="note">礙子綁紮沒有捷徑，必須反覆練習。考試中評審會嚴格檢查每圈間距是否均勻、紮線是否夠緊、結尾是否正確。</div>
+  ${svgInsulatorTypes()}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:12px">頂溝綁紮（Top Groove Tie）步驟</div>
+  ${["導線放入礙子頂部凹槽（頂溝）","紮線對折，中心點放在導線下方（紮線長度約為礙子直徑×20倍）","由下往上開始纏繞：第一扎間距3圈","後續每扎間距3圈，均勻纏繞","最後兩圈收尾，紮線末端藏入纏繞中","用鋼絲鉗夾住前後兩端紮線，分別向兩端拉緊"].map(function(t,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${t}</div>`;}).join('')}
+  <div class="tip">紮線鬆緊一致是關鍵：每纏一圈後要用鋼絲鉗或手指輕拉確認張力，最後前後端同時用鋼絲鉗夾緊拉直，剪斷後結尾藏在內側（監評看不到處）。</div>
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:12px">邊溝綁紮（Side Groove Tie）步驟</div>
+  ${["導線放入礙子側面凹槽（邊溝）","紮線中心點固定在導線和礙子交叉處","由下往上纏繞：第一扎間距1.5圈（起始間距較小）","中間各扎間距3圈","最後一扎間距1.5圈（結尾間距也較小）","最後纏兩圈收尾"].map(function(t,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${t}</div>`;}).join('')}
+</div>
+<div class="card">
+  <div style="color:#fbbf24;font-weight:700;font-size:14px;margin-bottom:12px">低壓軸型礙子終端綁紮</div>
+  ${["導線在軸型礙子上折回（折回長度約19cm）","先繞5圈固定（朝電源側方向）","再繞30圈（主綁紮段）","最後再繞小兩圈，做交叉（至少5個交叉點）","用鋼絲鉗拉緊，剪斷，末端藏入綁紮中"].map(function(t,i){return `<div style="color:#94a3b8;font-size:13px;line-height:1.8;padding:2px 0">${i+1}. ${t}</div>`;}).join('')}
+  <div class="warn">⚠️ C型環（連接導線用）施作注意：環的前後兩端必須是裸銅線，不可將絕緣皮或腰帶夾入環中→重大缺失！</div>
+</div>
+<div class="card">
+  <div style="color:#ef4444;font-weight:700;font-size:14px;margin-bottom:10px">礙子綁紮常見扣分項目</div>
+  ${[
+    ["紮線鬆弛不夠緊","用鋼絲鉗每圈確認，前後端拉緊"],
+    ["間距不均勻","練習時用尺量，感覺熟練後靠手感"],
+    ["結尾露出外側","結尾藏在礙子靠近支持物那側"],
+    ["C型環夾到腰帶","壓接前確認只有裸銅在環中"],
+    ["低壓線越過N線或相線的禁止區域","在軸型礙子伸出鐵架內側起紮"],
+  ].map(function(r){return `
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #1e3050">
+      <span style="color:#ef4444">❌</span>
+      <div><div style="color:#fca5a5;font-size:13px">${r[0]}</div>
+      <div style="color:#64748b;font-size:12px">✓ ${r[1]}</div></div>
+    </div>`;}).join('')}
+</div>
+`},
+};
+
+// ── SVG圖示函式 ──────────────────────────────────────
+
+function svgConduitCompare(){
+  var types=[
+    {x:10,c:"#64748b",name:"CD管",color:"橘色",inner:"#f97316"},
+    {x:108,c:"#94a3b8",name:"PVC管",color:"白/灰",inner:"#e2e8f0"},
+    {x:206,c:"#475569",name:"PVC線槽",color:"白色",inner:"#f1f5f9",isSlot:true},
+    {x:304,c:"#475569",name:"EMT管",color:"金屬",inner:"#94a3b8"},
+    {x:402,c:"#64748b",name:"可撓管",color:"金屬軟",inner:"#94a3b8",isFlex:true},
+  ];
+  var s='<svg viewBox="0 0 500 110" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  types.forEach(function(t){
+    if(t.isSlot){
+      s+='<rect x="'+(t.x)+'" y="25" width="80" height="30" rx="3" fill="none" stroke="'+(t.c)+'" stroke-width="3"/>';
+      s+='<rect x="'+(t.x+3)+'" y="55" width="80" height="6" rx="2" fill="'+(t.c)+'"/>';
+    } else if(t.isFlex){
+      for(var i=0;i<8;i++) s+='<ellipse cx="'+(t.x+10+i*10)+'" cy="40" rx="5" ry="15" fill="none" stroke="'+(t.c)+'" stroke-width="2.5"/>';
+    } else {
+      s+='<circle cx="'+(t.x+40)+'" cy="40" r="28" fill="none" stroke="'+(t.c)+'" stroke-width="7"/>';
+      s+='<circle cx="'+(t.x+40)+'" cy="40" r="15" fill="#060e1a"/>';
+    }
+    s+='<text x="'+(t.x+40)+'" y="84" text-anchor="middle" fill="'+(t.c)+'" font-size="11" font-weight="700">'+(t.name)+'</text>';
+    s+='<text x="'+(t.x+40)+'" y="98" text-anchor="middle" fill="#64748b" font-size="9">'+(t.color)+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+function tableHTML(rows){
+  var s='<div style="overflow-x:auto;margin:8px 0"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  rows.forEach(function(r,i){
+    var bg=i===0?'#131f30':i%2===0?'#0a1020':'transparent';
+    s+='<tr style="border-bottom:1px solid #1e3050;background:'+bg+'">';
+    var tc=i===0?'#93c5fd':'#94a3b8';
+    r.forEach(function(c){s+='<td style="padding:7px 10px;color:'+tc+'">'+c+'</td>';});
+    s+='</tr>';
+  });
+  s+='</table></div>';
+  return s;
+}
+
+function svgSteps(steps){
+  var total=steps.length*70+10;
+  var s='<svg viewBox="0 0 480 '+(total)+'" style="width:100%">';
+  steps.forEach(function(step,i){
+    var y=i*70+5;
+    s+='<rect x="0" y="'+(y)+'" width="470" height="62" rx="8" fill="#0e1827" stroke="'+(step.c)+'33" stroke-width="1.5"/>';
+    s+='<rect x="0" y="'+(y)+'" width="5" height="62" fill="'+(step.c)+'" rx="2"/>';
+    s+='<circle cx="30" cy="'+(y+31)+'" r="18" fill="'+(step.c)+'22" stroke="'+(step.c)+'" stroke-width="1.5"/>';
+    s+='<text x="30" y="'+(y+28)+'" text-anchor="middle" font-size="14">'+(step.icon)+'</text>';
+    s+='<text x="30" y="'+(y+42)+'" text-anchor="middle" fill="'+(step.c)+'" font-size="8">Step '+(step.n)+'</text>';
+    s+='<text x="56" y="'+(y+22)+'" fill="'+(step.c)+'" font-size="12" font-weight="700">'+(step.t)+'</text>';
+    s+='<text x="56" y="'+(y+40)+'" fill="#64748b" font-size="10">'+(step.d)+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+function svgTimeBar(items){
+  var total=items.reduce(function(a,b){return a+b.min;},0);
+  var s='<div style="background:#060e1a;border-radius:10px;padding:14px;margin-bottom:10px">';
+  s+='<div style="display:flex;border-radius:6px;overflow:hidden;height:28px;margin-bottom:8px">';
+  items.forEach(function(it){
+    s+='<div style="flex:'+(it.min)+';background:'+(it.c)+';position:relative" title="'+(it.label)+': '+(it.min)+'分"></div>';
+  });
+  s+='</div>';
+  items.forEach(function(it){
+    s+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
+    s+='<div style="width:12px;height:12px;border-radius:2px;background:'+(it.c)+';flex-shrink:0"></div>';
+    s+='<div style="font-size:12px;color:#94a3b8;flex:1">'+(it.label)+'</div>';
+    s+='<div style="font-size:12px;color:'+(it.c)+';font-weight:700">'+(it.min)+'分</div>';
+    s+='</div>';
+  });
+  s+='</div>';
+  return s;
+}
+
+function svgEMTBend(){
+  return '<svg viewBox="0 0 480 150" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">    <text x="80" y="15" text-anchor="middle" fill="#64748b" font-size="10">90度彎</text>    <line x1="20" y1="90" x2="80" y2="90" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <path d="M80,90 A30,30 0 0,1 110,60" fill="none" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <line x1="110" y1="60" x2="110" y2="20" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <text x="115" y="55" fill="#a78bfa" font-size="9">90°</text>    <text x="80" y="130" text-anchor="middle" fill="#94a3b8" font-size="9">標準彎管</text>    <text x="250" y="15" text-anchor="middle" fill="#64748b" font-size="10">偏移彎（Offset）</text>    <line x1="180" y1="90" x2="220" y2="90" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <path d="M220,90 A20,20 0 0,1 238,72" fill="none" stroke="#475569" stroke-width="7"/>    <line x1="238" y1="72" x2="278" y2="72" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <path d="M278,72 A20,20 0 0,0 296,54" fill="none" stroke="#475569" stroke-width="7"/>    <line x1="296" y1="54" x2="330" y2="54" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <line x1="180" y1="100" x2="330" y2="100" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4,3"/>    <text x="255" y="116" text-anchor="middle" fill="#a78bfa" font-size="8">偏移高度</text>    <text x="255" y="130" text-anchor="middle" fill="#94a3b8" font-size="9">跨越障礙物</text>    <text x="420" y="15" text-anchor="middle" fill="#64748b" font-size="10">鞍型彎</text>    <line x1="370" y1="90" x2="400" y2="90" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <path d="M400,90 A15,15 0 0,1 415,75" fill="none" stroke="#475569" stroke-width="7"/>    <line x1="415" y1="75" x2="435" y2="75" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <path d="M435,75 A15,15 0 0,0 450,60" fill="none" stroke="#475569" stroke-width="7"/>    <line x1="450" y1="60" x2="470" y2="60" stroke="#475569" stroke-width="7" stroke-linecap="round"/>    <text x="420" y="130" text-anchor="middle" fill="#94a3b8" font-size="9">跨越現有管路</text>  </svg>';}
+
+function svgEMTGround(){
+  return '<svg viewBox="0 0 480 130" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:8px">    <rect x="10" y="40" width="80" height="50" rx="5" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>    <text x="50" y="68" text-anchor="middle" fill="#22c55e" font-size="9">接線盒1</text>    <line x1="90" y1="65" x2="150" y2="65" stroke="#475569" stroke-width="6"/>    <line x1="90" y1="65" x2="150" y2="65" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,3"/>    <text x="120" y="58" text-anchor="middle" fill="#22c55e" font-size="7">EMT管</text>    <rect x="150" y="40" width="80" height="50" rx="5" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>    <text x="190" y="68" text-anchor="middle" fill="#22c55e" font-size="9">接線盒2</text>    <line x1="230" y1="65" x2="290" y2="65" stroke="#475569" stroke-width="6"/>    <rect x="290" y="40" width="80" height="50" rx="5" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>    <text x="330" y="68" text-anchor="middle" fill="#22c55e" font-size="9">接線盒3</text>    <line x1="370" y1="65" x2="430" y2="65" stroke="#475569" stroke-width="6"/>    <rect x="430" y="40" width="45" height="50" rx="5" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>    <text x="452" y="63" text-anchor="middle" fill="#3b82f6" font-size="8">配電</text>    <text x="452" y="75" text-anchor="middle" fill="#3b82f6" font-size="8">盤</text>    <line x1="10" y1="100" x2="475" y2="100" stroke="#22c55e" stroke-width="2.5"/>    <text x="240" y="118" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="700">1.6mm²綠色接地線（連通所有接線盒→配電盤）</text>  </svg>';}
+
+function svgFlexConduit(){
+  return '<svg viewBox="0 0 480 130" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">    <rect x="10" y="30" width="80" height="70" rx="5" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>    <text x="50" y="68" text-anchor="middle" fill="#64748b" font-size="9">配線板</text>    <text x="50" y="80" text-anchor="middle" fill="#94a3b8" font-size="8">EMT管</text>    <line x1="90" y1="65" x2="130" y2="65" stroke="#475569" stroke-width="6" stroke-linecap="round"/>    <text x="110" y="57" text-anchor="middle" fill="#64748b" font-size="7">硬管</text>    <rect x="130" y="50" width="30" height="30" rx="3" fill="#334155" stroke="#64748b" stroke-width="1"/>    <text x="145" y="68" text-anchor="middle" fill="#94a3b8" font-size="7">接頭</text>    '+Array.from({length:7},function(_,i){return '<ellipse cx="'+(168+i*12)+'" cy="65" rx="6" ry="16" fill="none" stroke="#94a3b8" stroke-width="2"/>';}).join('')+'    <text x="202" y="100" text-anchor="middle" fill="#94a3b8" font-size="9">可撓金屬管（最長1.8m）</text>    <rect x="260" y="50" width="30" height="30" rx="3" fill="#334155" stroke="#64748b" stroke-width="1"/>    <text x="275" y="68" text-anchor="middle" fill="#94a3b8" font-size="7">接頭</text>    <rect x="290" y="30" width="80" height="70" rx="8" fill="#1e3a1e" stroke="#22c55e" stroke-width="2"/>    <text x="330" y="63" text-anchor="middle" fill="#22c55e" font-size="10">電動機</text>    <text x="330" y="78" text-anchor="middle" fill="#86efac" font-size="8">振動源</text>    <line x1="320" y1="100" x2="320" y2="115" stroke="#22c55e" stroke-width="2"/>    <text x="330" y="125" text-anchor="middle" fill="#22c55e" font-size="8">可撓管阻隔震動傳遞到硬管</text>    <line x1="420" y1="50" x2="420" y2="115" stroke="#22c55e" stroke-width="2" stroke-dasharray="3,2"/>    <text x="455" y="68" fill="#22c55e" font-size="8">接地線</text>    <text x="455" y="80" fill="#64748b" font-size="8">需引入</text>    <text x="455" y="92" fill="#64748b" font-size="8">設備內</text>  </svg>';}
+
+function svgCableDuct(){
+  return '<svg viewBox="0 0 480 130" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">    <rect x="20" y="40" width="440" height="35" rx="3" fill="#1e293b" stroke="#94a3b8" stroke-width="2"/>    <rect x="20" y="75" width="440" height="8" rx="2" fill="#334155" stroke="#94a3b8" stroke-width="1"/>    <text x="240" y="62" text-anchor="middle" fill="#94a3b8" font-size="10">PVC線槽本體（底座）</text>    <text x="240" y="90" text-anchor="middle" fill="#64748b" font-size="9">蓋板（可開啟）</text>    <line x1="90" y1="42" x2="90" y2="74" stroke="#f59e0b" stroke-width="2.5"/>    <line x1="130" y1="42" x2="130" y2="74" stroke="#e2e8f0" stroke-width="2.5"/>    <line x1="170" y1="42" x2="170" y2="74" stroke="#22c55e" stroke-width="2.5"/>    <line x1="210" y1="42" x2="210" y2="74" stroke="#f59e0b" stroke-width="2.5"/>    <line x1="250" y1="42" x2="250" y2="74" stroke="#e2e8f0" stroke-width="2.5"/>    <text x="240" y="115" text-anchor="middle" fill="#64748b" font-size="9">導線整齊排列，蓋板可隨時打開增設導線</text>    <line x1="20" y1="30" x2="20" y2="18" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="3,2"/>    <line x1="100" y1="30" x2="100" y2="18" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="3,2"/>    <text x="60" y="14" text-anchor="middle" fill="#8b5cf6" font-size="8">固定螺絲（每80cm）</text>    <line x1="20" y1="85" x2="20" y2="97" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>    <text x="20" y="110" text-anchor="middle" fill="#94a3b8" font-size="7">牆面或配線板</text>  </svg>';}
+
+function svgPanelCompare(){
+  var systems=[
+    {x:10,w:140,t:"單相三線式",sub:"110/220V",c:"#3b82f6",
+     items:["主開關：2P NFB","L1分路：1P NFB","L2分路：1P NFB","220V：2P NFB","N線端子板","PE接地端子"]},
+    {x:165,w:140,t:"三相三線式",sub:"220V",c:"#f97316",
+     items:["主開關：3P NFB","R相分路","S相分路","T相分路","PE接地端子","（無中性線N）"]},
+    {x:320,w:155,t:"三相四線式",sub:"220/380V",c:"#a78bfa",
+     items:["主開關：3P/4P NFB","相線分路×3","N線端子板","PE端子板","單相220V：1P+N","三相380V：3P"]},
+  ];
+  var h=200;
+  var s='<svg viewBox="0 0 480 '+(h)+'" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  systems.forEach(function(sys){
+    s+='<rect x="'+(sys.x)+'" y="10" width="'+(sys.w)+'" height="'+(h-20)+'" rx="8" fill="#0e1827" stroke="'+(sys.c)+'" stroke-width="1.5"/>';
+    s+='<text x="'+(sys.x+sys.w/2)+'" y="28" text-anchor="middle" fill="'+(sys.c)+'" font-size="11" font-weight="700">'+(sys.t)+'</text>';
+    s+='<text x="'+(sys.x+sys.w/2)+'" y="42" text-anchor="middle" fill="#64748b" font-size="9">'+(sys.sub)+'</text>';
+    sys.items.forEach(function(item,i){
+      s+='<text x="'+(sys.x+10)+'" y="'+(58+i*22)+'" fill="#94a3b8" font-size="10">• '+(item)+'</text>';
+    });
+  });
+  s+='</svg>';
+  return s;
+}
+
+function svgMCTerminal(){
+  var s='<svg viewBox="0 0 480 200" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<rect x="140" y="10" width="200" height="180" rx="10" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>';
+  s+='<text x="240" y="30" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="700">電磁接觸器（MC）</text>';
+  // Input terminals RST
+  [["1/L1",155],["3/L2",210],["5/L3",265]].forEach(function(t){
+    s+='<rect x="'+t[1]+'" y="42" width="45" height="22" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>';
+    s+='<text x="'+(t[1]+22)+'" y="57" text-anchor="middle" fill="#f59e0b" font-size="9">'+t[0]+'</text>';
+  });
+  s+='<text x="240" y="80" text-anchor="middle" fill="#64748b" font-size="8">主接點（輸入RST）</text>';
+  // Output terminals UVW
+  [["2/T1",155],["4/T2",210],["6/T3",265]].forEach(function(t){
+    s+='<rect x="'+t[1]+'" y="90" width="45" height="22" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>';
+    s+='<text x="'+(t[1]+22)+'" y="105" text-anchor="middle" fill="#f59e0b" font-size="9">'+t[0]+'</text>';
+  });
+  s+='<text x="240" y="126" text-anchor="middle" fill="#64748b" font-size="8">主接點（輸出UVW）</text>';
+  s+='<rect x="155" y="136" width="40" height="20" rx="4" fill="#0f172a" stroke="#3b82f6" stroke-width="1.5"/>';
+  s+='<text x="175" y="149" text-anchor="middle" fill="#93c5fd" font-size="8">13-14</text>';
+  s+='<rect x="205" y="136" width="40" height="20" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>';
+  s+='<text x="225" y="149" text-anchor="middle" fill="#c4b5fd" font-size="8">21-22</text>';
+  s+='<rect x="155" y="162" width="90" height="20" rx="4" fill="#0f172a" stroke="#f97316" stroke-width="1.5"/>';
+  s+='<text x="200" y="175" text-anchor="middle" fill="#fdba74" font-size="9">A1 — A2（線圈）</text>';
+  s+='<text x="65" y="148" text-anchor="end" fill="#3b82f6" font-size="8">NO輔助接點 →</text>';
+  s+='<text x="65" y="170" text-anchor="end" fill="#a78bfa" font-size="8">NC輔助接點 →</text>';
+  s+='<text x="370" y="148" fill="#3b82f6" font-size="8">自保迴路</text>';
+  s+='<text x="370" y="162" fill="#a78bfa" font-size="8">互鎖接點</text>';
+  s+='<text x="370" y="176" fill="#f97316" font-size="8">控制電壓</text>';
+  s+='</svg>';
+  return s;
+}
+function svgTHRY(){
+  var s='<svg viewBox="0 0 480 160" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<rect x="130" y="10" width="220" height="140" rx="10" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>';
+  s+='<text x="240" y="30" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">積熱電驛（TH-RY）</text>';
+  s+='<text x="240" y="44" text-anchor="middle" fill="#64748b" font-size="9">電流設定旋鈕→接近電動機額定FLA值</text>';
+  [["1-2","R相",145],["3-4","S相",205],["5-6","T相",265]].forEach(function(t){
+    s+='<rect x="'+t[2]+'" y="52" width="50" height="20" rx="4" fill="#0f172a" stroke="#f97316" stroke-width="1.5"/>';
+    s+='<text x="'+(t[2]+25)+'" y="65" text-anchor="middle" fill="#fdba74" font-size="8">'+t[0]+'</text>';
+  });
+  s+='<text x="240" y="87" text-anchor="middle" fill="#64748b" font-size="8">主電路（串聯在RST電流回路）</text>';
+  s+='<rect x="145" y="96" width="55" height="20" rx="4" fill="#0f172a" stroke="#22c55e" stroke-width="1.5"/>';
+  s+='<text x="172" y="109" text-anchor="middle" fill="#86efac" font-size="8">95-96（NC）</text>';
+  s+='<rect x="210" y="96" width="55" height="20" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="237" y="109" text-anchor="middle" fill="#fbbf24" font-size="8">97-98（NO）</text>';
+  s+='<rect x="275" y="96" width="55" height="20" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>';
+  s+='<text x="302" y="109" text-anchor="middle" fill="#c4b5fd" font-size="8">Reset</text>';
+  s+='<text x="80" y="108" text-anchor="end" fill="#22c55e" font-size="8">正常時閉合→</text>';
+  s+='<text x="80" y="120" text-anchor="end" fill="#22c55e" font-size="8">串在MC線圈電路</text>';
+  s+='<text x="370" y="108" fill="#f59e0b" font-size="8">→跳脫後閉合</text>';
+  s+='<text x="370" y="120" fill="#f59e0b" font-size="8">→觸發警報</text>';
+  s+='<text x="240" y="140" text-anchor="middle" fill="#94a3b8" font-size="9">跳脫後：TH-RY冷卻→按Reset→95-96恢復閉合</text>';
+  s+='</svg>';
+  return s;
+}
+function svgYDeltaFwdRev(){
+  var s='<svg viewBox="0 0 480 200" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="16" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">Y-△正逆轉：四個MC的配置</text>';
+  [["KMF（正轉）","主電路：正轉","#22c55e",20],["KMR（逆轉）","主電路：逆轉","#ef4444",130],
+   ["KMY（Y接）","Y形啟動","#f59e0b",240],["KMD（△接）","△形運轉","#3b82f6",370]].forEach(function(b){
+    s+='<rect x="'+b[3]+'" y="30" width="90" height="50" rx="8" fill="'+b[2]+'22" stroke="'+b[2]+'" stroke-width="2"/>';
+    s+='<text x="'+(b[3]+45)+'" y="52" text-anchor="middle" fill="'+b[2]+'" font-size="10" font-weight="700">'+b[0]+'</text>';
+    s+='<text x="'+(b[3]+45)+'" y="68" text-anchor="middle" fill="#64748b" font-size="8">'+b[1]+'</text>';
+  });
+  s+='<text x="240" y="103" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="700">互鎖關係（缺一不可！）</text>';
+  [["互鎖①：KMF↔KMR（正逆轉）","各串對方NC接點，防三相短路","#ef4444",10,220],
+   ["互鎖②：KMY↔KMD（Y-△）","各串對方NC接點，防繞組短路","#f59e0b",250,220],
+   ["計時電驛KT：KMF/KMR通電時同步計時，時間到→KMY斷→KMD通（Y切△）","","#3b82f6",10,460]].forEach(function(b){
+    s+='<rect x="'+b[3]+'" y="110" width="'+b[4]+'" height="38" rx="6" fill="'+b[2]+'11" stroke="'+b[2]+'66" stroke-width="1.5"/>';
+    s+='<text x="'+(b[3]+10)+'" y="126" fill="'+b[2]+'" font-size="10" font-weight="700">'+b[0]+'</text>';
+    if(b[1]) s+='<text x="'+(b[3]+10)+'" y="140" fill="#64748b" font-size="9">'+b[1]+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+function svgPumpControl(){
+  var s='<svg viewBox="0 0 480 160" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="16" text-anchor="middle" fill="#3b82f6" font-size="10">兩台抽水泵交替控制邏輯</text>';
+  var steps=[["低水位","LS-L觸發","#64748b",10],["A泵啟動","MC1通電","#22c55e",120],
+             ["TDR計時","時間到","#3b82f6",230],["B泵啟動","MC2通電","#f59e0b",340]];
+  steps.forEach(function(s2){
+    s+='<rect x="'+s2[3]+'" y="28" width="100" height="45" rx="6" fill="'+s2[2]+'22" stroke="'+s2[2]+'" stroke-width="1.5"/>';
+    s+='<text x="'+(s2[3]+50)+'" y="48" text-anchor="middle" fill="'+s2[2]+'" font-size="10" font-weight="700">'+s2[0]+'</text>';
+    s+='<text x="'+(s2[3]+50)+'" y="63" text-anchor="middle" fill="#64748b" font-size="9">'+s2[1]+'</text>';
+  });
+  s+='<text x="115" y="53" text-anchor="middle" fill="#334155" font-size="18">→</text>';
+  s+='<text x="225" y="53" text-anchor="middle" fill="#334155" font-size="18">→</text>';
+  s+='<text x="335" y="53" text-anchor="middle" fill="#334155" font-size="18">→</text>';
+  s+='<text x="450" y="53" text-anchor="middle" fill="#f59e0b" font-size="18">↻</text>';
+  s+='<text x="240" y="95" text-anchor="middle" fill="#fbbf24" font-size="10">TH-RY跳脫→該台停→另一台自動接手</text>';
+  s+='<text x="240" y="112" text-anchor="middle" fill="#64748b" font-size="9">高水位：LS-H觸發→停止抽水</text>';
+  var lights=[["綠燈","待機","#22c55e",10],["紅燈","運轉中","#ef4444",130],["黃燈","故障","#f59e0b",250]];
+  lights.forEach(function(b){
+    s+='<circle cx="'+(b[3]+30)+'" cy="137" r="12" fill="'+b[2]+'33" stroke="'+b[2]+'" stroke-width="2"/>';
+    s+='<text x="'+(b[3]+30)+'" y="141" text-anchor="middle" fill="'+b[2]+'" font-size="8">'+b[0]+'</text>';
+    s+='<text x="'+(b[3]+60)+'" y="141" fill="#64748b" font-size="9">'+b[1]+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+function svgATS(){
+  var s='<svg viewBox="0 0 480 170" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="16" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">ATS自動切換電路</text>';
+  s+='<rect x="10" y="28" width="90" height="50" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>';
+  s+='<text x="55" y="50" text-anchor="middle" fill="#93c5fd" font-size="9">主電源</text>';
+  s+='<text x="55" y="64" text-anchor="middle" fill="#64748b" font-size="8">（市電）</text>';
+  s+='<rect x="115" y="28" width="70" height="50" rx="6" fill="#0a1020" stroke="#22c55e" stroke-width="1.5"/>';
+  s+='<text x="150" y="50" text-anchor="middle" fill="#86efac" font-size="9">MCA</text>';
+  s+='<text x="150" y="63" text-anchor="middle" fill="#64748b" font-size="8">主電源MC</text>';
+  s+='<line x1="100" y1="53" x2="115" y2="53" stroke="#3b82f6" stroke-width="2.5"/>';
+  s+='<rect x="200" y="28" width="80" height="50" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="240" y="47" text-anchor="middle" fill="#fbbf24" font-size="9">負載</text>';
+  s+='<text x="240" y="60" text-anchor="middle" fill="#64748b" font-size="8">（設備）</text>';
+  s+='<line x1="185" y1="53" x2="200" y2="53" stroke="#22c55e" stroke-width="2.5"/>';
+  s+='<rect x="295" y="28" width="70" height="50" rx="6" fill="#0a1020" stroke="#ef4444" stroke-width="1.5"/>';
+  s+='<text x="330" y="50" text-anchor="middle" fill="#fca5a5" font-size="9">MCB</text>';
+  s+='<text x="330" y="63" text-anchor="middle" fill="#64748b" font-size="8">備用電源MC</text>';
+  s+='<line x1="280" y1="53" x2="295" y2="53" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>';
+  s+='<rect x="380" y="28" width="90" height="50" rx="6" fill="#1a0800" stroke="#ef4444" stroke-width="2"/>';
+  s+='<text x="425" y="50" text-anchor="middle" fill="#fca5a5" font-size="9">備用電源</text>';
+  s+='<text x="425" y="64" text-anchor="middle" fill="#64748b" font-size="8">（發電機）</text>';
+  s+='<line x1="365" y1="53" x2="380" y2="53" stroke="#ef4444" stroke-width="2.5"/>';
+  s+='<text x="240" y="102" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="700">互鎖：MCA和MCB永遠不能同時通電！</text>';
+  s+='<text x="240" y="116" text-anchor="middle" fill="#64748b" font-size="9">電氣互鎖（各串對方NC）＋機械互鎖（考場器具板）</text>';
+  [["UVR","欠電壓偵測","#64748b",10],["TDR1","等備用電源穩定","#3b82f6",130],["TDR2","等主電源恢復穩定","#ef4444",250]].forEach(function(b){
+    s+='<rect x="'+b[3]+'" y="128" width="110" height="35" rx="5" fill="'+b[2]+'22" stroke="'+b[2]+'55" stroke-width="1"/>';
+    s+='<text x="'+(b[3]+55)+'" y="145" text-anchor="middle" fill="'+b[2]+'" font-size="10" font-weight="700">'+b[0]+'</text>';
+    s+='<text x="'+(b[3]+55)+'" y="158" text-anchor="middle" fill="#64748b" font-size="8">'+b[1]+'</text>';
+  });
+  s+='</svg>';
+  return s;
+}
+
+function svgMeterPanel(){
+  var s='<svg viewBox="0 0 480 190" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="16" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="700">儀表監視盤：CT和PT接線</text>';
+  [["#ef4444","R",40],["#22c55e","S",60],["#3b82f6","T",80]].forEach(function(p){
+    s+='<line x1="20" y1="'+p[2]+'" x2="460" y2="'+p[2]+'" stroke="'+p[0]+'" stroke-width="2.5"/>';
+    s+='<text x="10" y="'+(p[2]+4)+'" fill="'+p[0]+'" font-size="8">'+p[1]+'</text>';
+  });
+  [120,220].forEach(function(cx){
+    s+='<ellipse cx="'+cx+'" cy="50" rx="15" ry="25" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>';
+    s+='<text x="'+cx+'" y="53" text-anchor="middle" fill="#f59e0b" font-size="7">CT</text>';
+    s+='<text x="'+cx+'" y="90" text-anchor="middle" fill="#fbbf24" font-size="7">S1 S2→電流計</text>';
+  });
+  s+='<rect x="340" y="28" width="40" height="50" rx="4" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>';
+  s+='<text x="360" y="48" text-anchor="middle" fill="#a78bfa" font-size="7">PT</text>';
+  s+='<text x="360" y="60" text-anchor="middle" fill="#64748b" font-size="6">3300/110V</text>';
+  s+='<text x="360" y="90" text-anchor="middle" fill="#c4b5fd" font-size="7">→電壓計</text>';
+  [["瓦特計 W1","電流線圈串CT1",80],["瓦特計 W2","電流線圈串CT2",200],["功率因數計","電壓線圈接PT",320]].forEach(function(b){
+    var c=b[2]===320?"#a78bfa":"#3b82f6";
+    s+='<rect x="'+b[2]+'" y="120" width="80" height="40" rx="4" fill="#0a1020" stroke="'+c+'" stroke-width="1.5"/>';
+    s+='<text x="'+(b[2]+40)+'" y="138" text-anchor="middle" fill="'+c+'" font-size="9">'+b[0]+'</text>';
+    s+='<text x="'+(b[2]+40)+'" y="152" text-anchor="middle" fill="#64748b" font-size="7">'+b[1]+'</text>';
+  });
+  s+='<text x="240" y="180" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="700">⚠️ CT二次側接線中絕對不可開路！先短路後接線</text>';
+  s+='</svg>';
+  return s;
+}
+
+function svgTransformerPolarity(){
+  return '<svg viewBox="0 0 480 170" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">    <text x="120" y="14" text-anchor="middle" fill="#64748b" font-size="10">減極性（標準，台灣常用）</text>    <rect x="40" y="25" width="160" height="120" rx="8" fill="#1e293b" stroke="#22c55e" stroke-width="2"/>    <text x="120" y="55" text-anchor="middle" fill="#94a3b8" font-size="9">一次側</text>    <text x="120" y="115" text-anchor="middle" fill="#94a3b8" font-size="9">二次側</text>    <circle cx="52" cy="75" r="6" fill="#ef4444"/>    <text x="52" y="62" text-anchor="middle" fill="#ef4444" font-size="8">H1</text>    <circle cx="188" cy="75" r="6" fill="#64748b"/>    <text x="188" y="62" text-anchor="middle" fill="#64748b" font-size="8">H2</text>    <circle cx="52" cy="105" r="6" fill="#22c55e"/>    <text x="52" y="130" text-anchor="middle" fill="#22c55e" font-size="8">X1</text>    <circle cx="128" cy="105" r="6" fill="#64748b"/>    <text x="128" y="130" text-anchor="middle" fill="#64748b" font-size="8">X2</text>    <text x="120" y="156" text-anchor="middle" fill="#22c55e" font-size="9">H1和X1在同側（左側）= 減極性</text>    <text x="360" y="14" text-anchor="middle" fill="#64748b" font-size="10">判斷方法：串聯測試</text>    <rect x="280" y="25" width="160" height="120" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>    <text x="360" y="48" text-anchor="middle" fill="#f59e0b" font-size="9">串聯測試</text>    <text x="360" y="65" text-anchor="middle" fill="#94a3b8" font-size="8">V1（一次側）= 100V</text>    <text x="360" y="82" text-anchor="middle" fill="#22c55e" font-size="8">量測兩端電壓：</text>    <text x="360" y="98" text-anchor="middle" fill="#22c55e" font-size="8">≈差值（V1-V2）= 減極性</text>    <text x="360" y="114" text-anchor="middle" fill="#ef4444" font-size="8">≈和值（V1+V2）= 加極性</text>    <text x="360" y="132" text-anchor="middle" fill="#fbbf24" font-size="8">（台灣通常是減極性）</text>  </svg>';}
+
+function svgVV(){
+  var s='<svg viewBox="0 0 480 180" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">V-V接線圖</text>';
+  [["#ef4444","R",50],["#22c55e","S（共用）",90],["#3b82f6","T",130]].forEach(function(p){
+    s+='<line x1="30" y1="'+p[2]+'" x2="100" y2="'+p[2]+'" stroke="'+p[0]+'" stroke-width="2.5"/>';
+    s+='<text x="12" y="'+(p[2]+4)+'" text-anchor="middle" fill="'+p[0]+'" font-size="9">'+p[1]+'</text>';
+  });
+  s+='<rect x="100" y="38" width="60" height="62" rx="5" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="130" y="65" text-anchor="middle" fill="#f59e0b" font-size="9">T1</text>';
+  s+='<text x="130" y="78" text-anchor="middle" fill="#64748b" font-size="7">H1←R, H2←S</text>';
+  s+='<text x="130" y="91" text-anchor="middle" fill="#64748b" font-size="7">X1→a, X2→b</text>';
+  s+='<rect x="100" y="118" width="60" height="50" rx="5" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="130" y="140" text-anchor="middle" fill="#f59e0b" font-size="9">T2</text>';
+  s+='<text x="130" y="153" text-anchor="middle" fill="#64748b" font-size="7">H1←S, H2←T</text>';
+  s+='<text x="130" y="165" text-anchor="middle" fill="#64748b" font-size="7">X1→b, X2→c</text>';
+  [["#22c55e","a",70],["#3b82f6","b",105],["#64748b","c",140]].forEach(function(p){
+    s+='<line x1="160" y1="'+p[2]+'" x2="240" y2="'+p[2]+'" stroke="'+p[0]+'" stroke-width="2.5"/>';
+    s+='<text x="250" y="'+(p[2]+4)+'" fill="'+p[0]+'" font-size="9">'+p[1]+'</text>';
+  });
+  s+='<rect x="280" y="75" width="100" height="70" rx="8" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>';
+  s+='<text x="330" y="103" text-anchor="middle" fill="#22c55e" font-size="9">三相負載</text>';
+  s+='<text x="330" y="120" text-anchor="middle" fill="#64748b" font-size="8">（a, b, c三相輸出）</text>';
+  s+='<text x="240" y="170" text-anchor="middle" fill="#fbbf24" font-size="9">兩台變壓器提供三相電力，容量利用率57.7%</text>';
+  s+='</svg>';
+  return s;
+}
+
+function svgDeltaDelta(){
+  var s='<svg viewBox="0 0 480 185" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="240" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">△-△接線（封口前量開口端電壓！）</text>';
+  [["#ef4444","R",45],["#22c55e","S",90],["#3b82f6","T",135]].forEach(function(p){
+    s+='<line x1="30" y1="'+p[2]+'" x2="80" y2="'+p[2]+'" stroke="'+p[0]+'" stroke-width="2.5"/>';
+    s+='<text x="14" y="'+(p[2]+4)+'" text-anchor="middle" fill="'+p[0]+'" font-size="9">'+p[1]+'</text>';
+  });
+  [["T1","R-S",34],["T2","S-T",79],["T3","T-R",124]].forEach(function(t){
+    s+='<rect x="80" y="'+t[2]+'" width="55" height="38" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+    s+='<text x="107" y="'+(t[2]+16)+'" text-anchor="middle" fill="#f59e0b" font-size="9">'+t[0]+'</text>';
+    s+='<text x="107" y="'+(t[2]+29)+'" text-anchor="middle" fill="#64748b" font-size="7">一次：'+t[1]+'</text>';
+  });
+  [["a",44],["b",88],["c",132]].forEach(function(p){
+    s+='<line x1="135" y1="'+p[1]+'" x2="210" y2="'+p[1]+'" stroke="#94a3b8" stroke-width="2"/>';
+    s+='<text x="220" y="'+(p[1]+4)+'" fill="#94a3b8" font-size="9">'+p[0]+'</text>';
+  });
+  s+='<rect x="250" y="65" width="130" height="55" rx="6" fill="#1a0800" stroke="#ef4444" stroke-width="2"/>';
+  s+='<text x="315" y="88" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700">封口前！</text>';
+  s+='<text x="315" y="104" text-anchor="middle" fill="#fca5a5" font-size="9">量開口端電壓≈0V</text>';
+  s+='<text x="315" y="116" text-anchor="middle" fill="#64748b" font-size="8">才能封口！否則短路</text>';
+  s+='<text x="240" y="175" text-anchor="middle" fill="#64748b" font-size="8">二次側△接完成後先不接最後一個端子，送電量測確認後才封口</text>';
+  s+='</svg>';
+  return s;
+}
+
+function svgOpenYV(){
+  var s='<svg viewBox="0 0 480 170" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="120" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">一次側：開Y（星形）</text>';
+  [["#ef4444","R",40],["#22c55e","S",80],["#3b82f6","T",120]].forEach(function(p){
+    s+='<line x1="20" y1="'+p[2]+'" x2="60" y2="'+p[2]+'" stroke="'+p[0]+'" stroke-width="2.5"/>';
+    s+='<text x="12" y="'+(p[2]+4)+'" text-anchor="middle" fill="'+p[0]+'" font-size="9">'+p[1]+'</text>';
+  });
+  [["T1",30],["T2",70],["T3",110]].forEach(function(t){
+    s+='<rect x="60" y="'+t[1]+'" width="50" height="32" rx="4" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>';
+    s+='<text x="85" y="'+(t[1]+19)+'" text-anchor="middle" fill="#a78bfa" font-size="9">'+t[0]+'</text>';
+    s+='<line x1="110" y1="'+(t[1]+16)+'" x2="140" y2="80" stroke="#a78bfa" stroke-width="1.5"/>';
+  });
+  s+='<circle cx="140" cy="80" r="6" fill="#a78bfa"/>';
+  s+='<text x="155" y="84" fill="#a78bfa" font-size="8">中性點（不接地，開放型）</text>';
+  s+='<text x="350" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">二次側：V接</text>';
+  s+='<rect x="270" y="35" width="50" height="32" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="295" y="54" text-anchor="middle" fill="#f59e0b" font-size="9">T1</text>';
+  s+='<rect x="270" y="90" width="50" height="32" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<text x="295" y="109" text-anchor="middle" fill="#f59e0b" font-size="9">T2</text>';
+  s+='<rect x="270" y="145" width="50" height="22" rx="4" fill="#1e293b" stroke="#64748b" stroke-width="1"/>';
+  s+='<text x="295" y="158" text-anchor="middle" fill="#64748b" font-size="8">T3（未使用）</text>';
+  s+='<line x1="320" y1="46" x2="370" y2="46" stroke="#ef4444" stroke-width="2"/>';
+  s+='<text x="380" y="50" fill="#ef4444" font-size="9">a（R）</text>';
+  s+='<line x1="320" y1="58" x2="360" y2="90" stroke="#22c55e" stroke-width="2"/>';
+  s+='<line x1="320" y1="102" x2="360" y2="90" stroke="#22c55e" stroke-width="2"/>';
+  s+='<text x="365" y="94" fill="#22c55e" font-size="9">b（共用）</text>';
+  s+='<line x1="320" y1="114" x2="370" y2="114" stroke="#3b82f6" stroke-width="2"/>';
+  s+='<text x="380" y="118" fill="#3b82f6" font-size="9">c（T）</text>';
+  s+='<text x="240" y="165" text-anchor="middle" fill="#fbbf24" font-size="8">T3二次側未使用，只有T1和T2的二次側接線</text>';
+  s+='</svg>';
+  return s;
+}
+
+function svgDeltaY(){
+  var s='<svg viewBox="0 0 480 170" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">';
+  s+='<text x="120" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">一次側：△接</text>';
+  [["T1","R-S",35],["T2","S-T",80],["T3","T-R",125]].forEach(function(t){
+    s+='<rect x="20" y="'+t[2]+'" width="60" height="35" rx="4" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>';
+    s+='<text x="50" y="'+(t[2]+16)+'" text-anchor="middle" fill="#ef4444" font-size="9">'+t[0]+'</text>';
+    s+='<text x="50" y="'+(t[2]+29)+'" text-anchor="middle" fill="#64748b" font-size="7">'+t[1]+'</text>';
+  });
+  s+='<line x1="20" y1="52" x2="20" y2="98" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,2"/>';
+  s+='<line x1="20" y1="98" x2="20" y2="143" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,2"/>';
+  s+='<text x="350" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">二次側：Y接</text>';
+  [["T1","X1→R",35],["T2","X1→S",80],["T3","X1→T",125]].forEach(function(t){
+    s+='<rect x="270" y="'+t[2]+'" width="60" height="35" rx="4" fill="#1e293b" stroke="#22c55e" stroke-width="1.5"/>';
+    s+='<text x="300" y="'+(t[2]+16)+'" text-anchor="middle" fill="#22c55e" font-size="9">'+t[0]+'</text>';
+    s+='<text x="300" y="'+(t[2]+29)+'" text-anchor="middle" fill="#64748b" font-size="7">'+t[1]+'</text>';
+  });
+  [["R","#ef4444",52],["S","#22c55e",97],["T","#3b82f6",142]].forEach(function(p){
+    s+='<line x1="330" y1="'+p[2]+'" x2="380" y2="'+p[2]+'" stroke="'+p[1]+'" stroke-width="2.5"/>';
+    s+='<text x="390" y="'+(p[2]+4)+'" fill="'+p[1]+'" font-size="9">'+p[0]+'</text>';
+  });
+  s+='<line x1="270" y1="52" x2="250" y2="98" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<line x1="270" y1="98" x2="250" y2="98" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<line x1="270" y1="142" x2="250" y2="98" stroke="#f59e0b" stroke-width="1.5"/>';
+  s+='<circle cx="250" cy="98" r="6" fill="#f59e0b"/>';
+  s+='<text x="225" y="90" text-anchor="middle" fill="#f59e0b" font-size="7">中性點N</text>';
+  s+='<text x="225" y="102" text-anchor="middle" fill="#64748b" font-size="7">接地（≤25Ω）</text>';
+  s+='<text x="240" y="165" text-anchor="middle" fill="#fbbf24" font-size="8">二次側（Y）落後一次側（△）30度 → Dyn11接線群組</text>';
+  s+='</svg>';
+  return s;
+}
+
+function svgInsulatorTypes(){
+  return '<svg viewBox="0 0 480 170" style="width:100%;background:#060e1a;border-radius:10px;margin-bottom:10px">    <text x="100" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">針型礙子（頂溝/邊溝）</text>    <rect x="80" y="70" width="40" height="60" rx="5" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>    <rect x="70" y="80" width="60" height="15" rx="3" fill="#64748b"/>    <rect x="70" y="100" width="60" height="15" rx="3" fill="#64748b"/>    <line x1="10" y1="68" x2="190" y2="68" stroke="#f59e0b" stroke-width="4"/>    <text x="10" y="58" fill="#f59e0b" font-size="8">導線（頂溝）</text>    '+Array.from({length:6},function(_,i){return '<ellipse cx="'+(30+i*28)+'" cy="68" rx="4" ry="3" fill="none" stroke="#e2e8f0" stroke-width="1.5" transform="rotate(-30 '+(30+i*28)+' 68)"/>';}).join('')+'    <text x="100" y="148" text-anchor="middle" fill="#64748b" font-size="8">紮線每隔3圈一扎，均勻分布</text>    <text x="340" y="15" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="700">軸型礙子（終端綁紮）</text>    <rect x="300" y="60" width="80" height="80" rx="8" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>    <circle cx="340" cy="100" r="20" fill="#060e1a"/>    <line x1="220" y1="88" x2="300" y2="88" stroke="#f59e0b" stroke-width="4"/>    <line x1="220" y1="88" x2="300" y2="112" stroke="#f59e0b" stroke-width="3" stroke-dasharray="4,2"/>    <text x="225" y="80" fill="#f59e0b" font-size="8">導線折回</text>    <text x="225" y="128" fill="#64748b" font-size="7">折回19cm</text>    <text x="225" y="140" fill="#64748b" font-size="7">先繞5圈</text>    <text x="225" y="152" fill="#64748b" font-size="7">再繞30圈</text>    <text x="340" y="158" text-anchor="middle" fill="#64748b" font-size="7">終端綁紮固定導線</text>  </svg>';}
+
+// ── App主程式 ──────────────────────────────────────────
+var currentLesson = null;
+var prog = JSON.parse(localStorage.getItem('b_prac_prog')||'{}');
+
+function saveProg(){localStorage.setItem('b_prac_prog',JSON.stringify(prog));}
+
+function renderRoot(){
+  document.getElementById('root').innerHTML =
+    currentLesson ? renderLesson() : renderHome();
+}
+
+function renderHome(){
+  var done = LESSONS.filter(function(l){return prog[l.id];}).length;
+  function stationGroup(n,color,label){
+    var ls=LESSONS.filter(function(l){return l.station===n;});
+    var html='<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="height:3px;flex:1;background:'+color+'44;border-radius:2px"></div><span style="font-size:12px;font-weight:700;color:'+color+';white-space:nowrap">'+label+'</span><div style="height:3px;flex:1;background:'+color+'44;border-radius:2px"></div></div>';
+    ls.forEach(function(l,idx){
+      var done2=prog[l.id];
+      var bc=done2?l.color+'66':'#1e2d40';
+      var icon=done2?'&#x2705;':'&#x1F4D6;';
+      var globalIdx=LESSONS.indexOf(l);
+      html+='<button onclick="openLesson(LESSONS['+globalIdx+'].id)" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:7px;background:#0d1827;border:1px solid '+bc+';border-radius:10px;cursor:pointer;text-align:left">'+
+        '<span style="font-size:22px">'+l.icon+'</span>'+
+        '<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#e2e8f0">'+l.title+'</div>'+
+        '<div style="font-size:11px;color:#64748b;margin-top:1px">'+l.subtitle+'</div></div>'+
+        '<span style="font-size:14px">'+icon+'</span>'+
+        '<span style="color:#334155">&#x203A;</span></button>';
+    });
+    html+='</div>';
+    return html;
+  }
+  return '<div style="min-height:100vh">'+
+    '<div style="background:linear-gradient(135deg,#0d1f2d,#070f1a);border-bottom:1px solid #1e2d40;padding:16px 18px">'+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'+
+    '<div style="width:46px;height:46px;background:linear-gradient(135deg,#ef4444,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px #ef444444">⚡</div>'+
+    '<div><div style="font-size:18px;font-weight:800;color:#f8fafc">乙級室內配線 實作教學</div>'+
+    '<div style="font-size:11px;color:#64748b">三站完整實作步驟、SVG示意圖、配線手法</div></div>'+
+    '<div style="margin-left:auto;text-align:right"><div style="font-size:10px;color:#64748b">完成</div>'+
+    '<div style="font-size:15px;color:#a78bfa;font-weight:700">'+done+'/'+LESSONS.length+'</div></div></div>'+
+    '<div style="background:#1e293b;border-radius:999px;height:4px">'+
+    '<div style="height:100%;width:'+Math.round(done/LESSONS.length*100)+'%;background:linear-gradient(90deg,#3b82f6,#ef4444);border-radius:999px;transition:width .5s"></div></div>'+
+    '</div>'+
+    '<div style="padding:12px 14px 60px;max-width:680px;margin:0 auto">'+
+    stationGroup(1,'#3b82f6','🏗️ 第一站：屋內線路裝置（160分鐘）')+
+    stationGroup(2,'#f59e0b','⚙️ 第二站：電機控制裝置（90分鐘）')+
+    stationGroup(3,'#ef4444','🏭 第三站：高壓外線作業（90分鐘）')+
+    '</div></div>';
+
+}
+
+function markDone(id){prog[id]=1;saveProg();currentLesson=null;renderRoot();}
+function openLesson(id){
+  currentLesson = id;
+  renderRoot();
+  window.scrollTo(0,0);
+}
+
+function renderLesson(){
+  var l = LESSONS.find(function(x){return x.id===currentLesson;});
+  var content = CONTENT[currentLesson] ? CONTENT[currentLesson]() : '<p style="color:#64748b">內容準備中</p>';
+  return '<div style="min-height:100vh;background:#070d18">'+
+    '<div style="background:#0d1424;border-bottom:1px solid #1e2d40;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10">'+
+    '<button onclick="currentLesson=null;renderRoot()" style="background:#1e2d40;border:none;color:#94a3b8;padding:7px 13px;border-radius:7px;font-size:13px;cursor:pointer">← 返回</button>'+
+    '<div style="flex:1"><div style="font-size:10px;color:'+l.color+';font-weight:700">第'+l.station+'站</div>'+
+    '<div style="font-size:14px;font-weight:700;color:#f8fafc">'+l.icon+' '+l.title+'</div></div>'+
+    '<button onclick="markDone(currentLesson)" style="background:linear-gradient(135deg,#166534,#15803d);border:none;color:#86efac;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer">&#x2705; 學完了</button>'+
+    '</div>'+
+    '<div style="padding:16px 14px 80px;max-width:720px;margin:0 auto">'+content+'</div></div>';
+}
+
+renderRoot();
+</script>
+</body>
+</html>
